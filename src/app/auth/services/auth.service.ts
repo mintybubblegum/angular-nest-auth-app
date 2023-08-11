@@ -11,7 +11,7 @@ import { AuthStatus, LoginResponse, User } from '../interfaces';
 export class AuthService {
 
   private readonly baseUrl: string = environment.baseUrl;
-  private http = inject( HttpClient ); //para hacer peticiones
+  private http = inject( HttpClient ); //instancia para hacer peticiones HTTP
 
   private _currentUser = signal<User|null>(null);
   private _authStatus = signal<AuthStatus>( AuthStatus.checking );
@@ -22,6 +22,7 @@ export class AuthService {
 
 
   constructor() { }
+  //Este método toma un correo electrónico (email) y contraseña (password) como parámetros y devuelve un observable que emite un valor booleano indicando si el inicio de sesión fue exitoso.
 
   login( email: string, password: string ): Observable<boolean> {
 
@@ -30,13 +31,10 @@ export class AuthService {
 
     return this.http.post<LoginResponse>( url, body )
       .pipe(
-        tap( ({ user, token }) => {
+        tap( ({ user, token }) => { // se actualiza el _currentUser con el usuario obtenido de la respuesta, se establece el estado de autenticación en _authStatus y se guarda el token en el almacenamiento local.
           this._currentUser.set( user );
           this._authStatus.set( AuthStatus.authenticated );
-          localStorage.setItem('token', token);
-
-          console.log({ user, token });
-          
+          localStorage.setItem('token', token);          
         }),
 
         map( () => true ),

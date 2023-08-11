@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
 
 const routes: Routes = [
 
@@ -10,7 +11,7 @@ const routes: Routes = [
   },
   {
     path: 'dashboard',
-    //guards
+    canActivate: [ isAuthenticatedGuard ], //! no se puede entrar al dashboard a menos que esté autenticado con JWT
     loadChildren: () => import('./dashboard/dashboard.module').then( m => m.DashboardModule ),
   },
   {
