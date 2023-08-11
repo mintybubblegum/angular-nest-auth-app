@@ -22,8 +22,19 @@ export class AuthService {
 
 
   constructor() { }
-  //Este método toma un correo electrónico (email) y contraseña (password) como parámetros y devuelve un observable que emite un valor booleano indicando si el inicio de sesión fue exitoso.
 
+  // se actualiza el _currentUser con el usuario obtenido de la respuesta, se establece el estado de autenticación en _authStatus y se guarda el token en el almacenamiento local.
+  private setAuthentication(user: User, token: string): boolean{
+    
+    this._currentUser.set( user );
+    this._authStatus.set( AuthStatus.authenticated );
+    localStorage.setItem('token', token);       
+  
+    return true;
+  }
+
+
+  //Este método toma un correo electrónico (email) y contraseña (password) como parámetros y devuelve un observable que emite un valor booleano indicando si el inicio de sesión fue exitoso.
   login( email: string, password: string ): Observable<boolean> {
 
     const url = `${ this.baseUrl }/auth/login`;
@@ -31,19 +42,10 @@ export class AuthService {
 
     return this.http.post<LoginResponse>( url, body )
       .pipe(
-        tap( ({ user, token }) => { // se actualiza el _currentUser con el usuario obtenido de la respuesta, se establece el estado de autenticación en _authStatus y se guarda el token en el almacenamiento local.
-          this._currentUser.set( user );
-          this._authStatus.set( AuthStatus.authenticated );
-          localStorage.setItem('token', token);          
-        }),
-
-        map( () => true ),
-
-        //Todo: errores
+        map( ({ user, token }) => this.setAuthentication( user, token )),
         catchError( err => throwError( () => err.error.message )
-        
-        )
-      )
+        )  
+      );
   }
 
   checkAuthStatus():Observable<boolean> {
@@ -58,14 +60,7 @@ export class AuthService {
 
       return this.http.get<CheckTokenResponse>(url, { headers })
         .pipe(
-          map( ({ token, user }) => {
-            this._currentUser.set( user );
-            this._authStatus.set( AuthStatus.authenticated );
-            localStorage.setItem('token', token);
-            
-            return true;
-          }),
-          //Error
+          map( ({ user, token }) => this.setAuthentication( user, token )),
           catchError(() => {
             this._authStatus.set( AuthStatus.notAuththenticated );
             return of(false);
