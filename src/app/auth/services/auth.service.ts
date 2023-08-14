@@ -21,7 +21,9 @@ export class AuthService {
   public authStatus = computed( () => this._authStatus() );
 
 
-  constructor() { }
+  constructor() { 
+    this.checkAuthStatus().subscribe();
+  }
 
   // se actualiza el _currentUser con el usuario obtenido de la respuesta, se establece el estado de autenticación en _authStatus y se guarda el token en el almacenamiento local.
   private setAuthentication(user: User, token: string): boolean{
